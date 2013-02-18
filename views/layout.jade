@@ -1,0 +1,20 @@
+!!!5
+
+html
+  head
+    title #{title}
+    link(rel='stylesheet', href='/stylesheets/style.css')
+
+    script(src='/socket.io/socket.io.js') 
+    script(src='/scripts/comm.js') 
+
+  body
+    header
+      .top
+       | 8tracks
+      h1 Recent Mixes 
+    .container
+    .main-content
+      block content
+    footer 
+      p Running on Node.js with Express, Jade and Stylus
