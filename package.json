@@ -1,6 +1,6 @@
 {
   "name": "8tracks-history",
-  "description": "8tracks history polling app",
+  "description": "8tracks history app",
   "version": "0.0.1",
   "private": "true",
   "dependencies": {
@@ -9,7 +9,6 @@
     "stylus": "*",
     "nib": "*",
     "querystring": "*",
-    "cookie": "*",
-    "sqlite3": "*"
+    "cookie": "*"
   }
 }
