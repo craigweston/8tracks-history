@@ -2,16 +2,7 @@ var http = require('http');
 var querystring = require('querystring');
 var cookie = require('cookie');
 
-function readAuthToken(header) {
-  for(var i=0, len = header.length; i < len; ++i) {
-    var authToken = cookie.parse(header[i])['auth_token'];
-    if(authToken) {
-      return authToken;
-    }
-  }
-}
-
-exports.authenticate = function(login, password, onAuth) {
+exports.authenticate = function(login, password, callback) {
 
   var params = querystring.stringify({
     login: login,
@@ -30,27 +21,36 @@ exports.authenticate = function(login, password, onAuth) {
   }; 
 
   var req = http.request(options, function(res) {
-
-    console.log('8tracks auth - response code: ' + res.statusCode);
-    console.log('8tracks auth - headers: ' + JSON.stringify(res.headers));
-
     if (200 == res.statusCode) {
-
-      var resdata = '';
-
+      var buffer = '';
       res.on('data', function(chunk) {
-        resdata += chunk;
+        buffer += chunk;
       });
 
       res.on('end', function() {
-        onAuth(readAuthToken(res.headers['set-cookie']));
+        var data = null;
+        try {
+           data = JSON.parse(buffer);
+        } catch (err) {
+          callback(new Error('error parsing auth JSON response: ' + err));
+        }
+
+        var auth_token = data.auth_token;
+        if(!auth_token) {
+          callback(new Error('no user results returned in auth response')); 
+        }
+
+        callback(null, auth_token);
+
       });
 
+    } else {
+        callback(new Error('unhandled http status code: ' + res.statusCode));
     }
   });
 
   req.on('error', function(err) {
-    console.log('8tracks auth - error: ' + err);
+    callback(new Error('8tracks auth - error: ' + err));
   });
 
   req.write(params);
@@ -60,10 +60,8 @@ exports.authenticate = function(login, password, onAuth) {
   req.end();
 }
 
-exports.tracklist = function(api_key, auth_token, onTrackList) {
-
-  console.log('cookie: ' + cookie.serialize('auth_token', auth_token));
-
+exports.history = function(api_key, auth_token, callback) {
+  console.log(auth_token);
   var options = {
     method: 'GET',
     host: '8tracks.com',
@@ -75,37 +73,34 @@ exports.tracklist = function(api_key, auth_token, onTrackList) {
   };
 
   var req = http.request(options, function(res) {
-
-      console.log('8tracks tracklist - response code: ' + res.statusCode);
-      console.log('8tracks tracklist - headers: ' + JSON.stringify(res.headers));
-
       if (200 == res.statusCode) {
-
-        var resdata = '';
-
+        var buffer = '';
         res.on('data', function(chunk) {
-          resdata += chunk;
+          buffer += chunk;
         });
 
         res.on('end', function() {
-
-          var pdata;
+          var data = null;
           try {
-            pdata = JSON.parse(resdata);  
+            data = JSON.parse(buffer);  
           } catch(err) {
-            console.log('8tracks tracklist - error parsing JSON response');
-            console.log(err);
+            callback(new Error('error parsing JSON response'));
           }
 
-          onTrackList(pdata);
+          if(!data.mixes) {
+            callback(new Error('no mixes returned in response'));
+          }
+
+          callback(null, data.mixes)
 
         });
-
+      } else {
+        callback(new Error('unhandled http status code: ' + res.statusCode));
       }
   });
 
   req.on('error', function(err) {
-    console.log('8tracks tracklist - error: ' + err);
+    callback(new Error('8tracks history - error: ' + err));
   });
 
   req.end();

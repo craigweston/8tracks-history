@@ -2,7 +2,12 @@ extend layout
 
 block content
 
+ if locals.error
+  .error
+    p #{locals.error}
+ else
   ul
     each mix in mixes
-      li #{mix.name}
+      li 
+        a(href='#{mix.restful_url}') #{mix.name}
    

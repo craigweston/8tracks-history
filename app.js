@@ -24,11 +24,24 @@ app.use(stylus.middleware({
 app.use(express.static(__dirname + '/public'));
 
 app.get('/8tracks', function(req, res) {
-  etracks.authenticate(config.get('username'), config.get('password'), 
-    function(auth_token) {
-      etracks.tracklist(config.get('api_key'), auth_token, function(data) {
-        res.render('index', { title: '8tracks - Recent', mixes: data.mixes });
-      });
+
+  var username = config.get('username');
+  var password = config.get('password');
+
+  etracks.authenticate(username, password, function(err, auth_token) {
+      if(err) {
+        console.log(err);
+        res.render('index', { error: 'An error has occurred' });
+      } else {
+        etracks.history(config.get('api_key'), auth_token, function(err, mixes) {
+          if(err) {
+            console.log(err);
+            res.render('index', { error: 'An error has occurred' });
+          } else {
+            res.render('index', { mixes: mixes });
+          }
+        });
+      }
   })
 });
 
