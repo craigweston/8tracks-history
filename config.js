@@ -1,4 +1,6 @@
-var fs = require('fs')
+var fs = require('fs'),
+    events = require('events'),
+    util = require('util')
 
 function readFromFile(filename) {
   console.log('reading configuration...');
@@ -16,13 +18,18 @@ function Config(filename) {
     return new Config(filename);
   }
 
+  events.EventEmitter.call(this);
+
   this.data = readFromFile(filename);
 
   var self = this;
   fs.watchFile(filename, function(curr, prev) {
     self.data = readFromFile(filename);
+    self.emit('change');
   });
 }
+
+util.inherits(Config, events.EventEmitter);
 
 Config.prototype.get = function(key) {
   if(this.data) {

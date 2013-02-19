@@ -1,6 +1,7 @@
 var http = require('http');
-var querystring = require('querystring');
-var cookie = require('cookie');
+  querystring = require('querystring'),
+  cookie = require('cookie'),
+  config = require('./config');
 
 function authenticate(login, password, callback) {
   console.log('etracks - requesting auth token');
@@ -116,6 +117,11 @@ function ETracks() {
   }
 
   this.auth_tokens = {}; 
+
+  var self = this;
+  config.on('change', function() {
+    self.auth_tokens = {};
+  });
 }
 
 ETracks.prototype.history = function(api_key, login, password, callback) {
