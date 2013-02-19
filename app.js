@@ -33,7 +33,8 @@ app.get('/8tracks', function(req, res) {
         console.log(err);
         res.render('index', { error: 'An error has occurred' });
       } else {
-        etracks.history(config.get('api_key'), auth_token, function(err, mixes) {
+        var api_key = config.get('api_key');
+        etracks.history(api_key, auth_token, function(err, mixes) {
           if(err) {
             console.log(err);
             res.render('index', { error: 'An error has occurred' });

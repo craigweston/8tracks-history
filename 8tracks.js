@@ -33,14 +33,15 @@ exports.authenticate = function(login, password, callback) {
            data = JSON.parse(buffer);
         } catch (err) {
           callback(new Error('error parsing auth JSON response: ' + err));
+          return;
         }
 
         var auth_token = data.auth_token;
-        if(!auth_token) {
+        if(auth_token) {
+          callback(null, auth_token);
+        } else {
           callback(new Error('no user results returned in auth response')); 
         }
-
-        callback(null, auth_token);
 
       });
 
@@ -61,7 +62,6 @@ exports.authenticate = function(login, password, callback) {
 }
 
 exports.history = function(api_key, auth_token, callback) {
-  console.log(auth_token);
   var options = {
     method: 'GET',
     host: '8tracks.com',
@@ -85,13 +85,14 @@ exports.history = function(api_key, auth_token, callback) {
             data = JSON.parse(buffer);  
           } catch(err) {
             callback(new Error('error parsing JSON response'));
+            return;
           }
 
-          if(!data.mixes) {
+          if(data.mixes) {
+            callback(null, data.mixes)
+          } else {
             callback(new Error('no mixes returned in response'));
           }
-
-          callback(null, data.mixes)
 
         });
       } else {
