@@ -13,7 +13,7 @@ function readFromFile(filename) {
 function Config(filename) {
  
   if(!(this instanceof arguments.callee)) {
-    return new Config();
+    return new Config(filename);
   }
 
   this.data = readFromFile(filename);

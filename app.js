@@ -27,23 +27,16 @@ app.get('/8tracks', function(req, res) {
 
   var username = config.get('username');
   var password = config.get('password');
+  var api_key = config.get('api_key');
 
-  etracks.authenticate(username, password, function(err, auth_token) {
-      if(err) {
-        console.log(err);
-        res.render('index', { error: 'An error has occurred' });
-      } else {
-        var api_key = config.get('api_key');
-        etracks.history(api_key, auth_token, function(err, mixes) {
-          if(err) {
-            console.log(err);
-            res.render('index', { error: 'An error has occurred' });
-          } else {
-            res.render('index', { mixes: mixes });
-          }
-        });
-      }
-  })
+  etracks.history(api_key, username, password, function(err, mixes) {
+    if(err) {
+      res.render('index', { error: 'An error has occurred' });
+    } else {
+      res.render('index', { mixes: mixes });
+    }
+  });
+
 });
 
 app.listen(3000);
